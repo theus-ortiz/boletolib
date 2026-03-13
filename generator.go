@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/theus-ortiz/boletolib/bank"
 	"github.com/theus-ortiz/boletolib/internal/calc"
 )
 
@@ -25,8 +26,12 @@ func Generate(b Boleto) (Result, error) {
 		return Result{}, err
 	}
 
-	// Passo 1 — DV do Nosso Número
-	dvNN := b.Bank.NossoNumeroDV(b.NossoNumero)
+	// Passo 1 — Extrai número puro e DV do Nosso Número
+	// Aceita "00000000001" (calcula DV) ou "00000000001-9" / "000000000019" (valida e usa DV fornecido)
+	nnPuro, dvNN, err := parseNossoNumero(b.NossoNumero, b.Bank)
+	if err != nil {
+		return Result{}, err
+	}
 
 	// Passo 2 — Fator de vencimento (4 dígitos, seleção automática de ciclo)
 	factor := fmt.Sprintf("%04d", calc.DueDateFactor(b.DueDate))
@@ -35,7 +40,7 @@ func Generate(b Boleto) (Result, error) {
 	amount := fmt.Sprintf("%010d", b.AmountCents)
 
 	// Passo 4 — Campo livre de 25 dígitos (composição definida pelo banco)
-	freeField := b.Bank.FreeField(b.Agency, b.Account, b.NossoNumero)
+	freeField := b.Bank.FreeField(b.Agency, b.Account, nnPuro)
 
 	// Passo 5 — Base do código de barras (43 dígitos, sem a posição 5 do DV)
 	//   Posições 1–4  : banco(3) + moeda(1)
@@ -57,8 +62,33 @@ func Generate(b Boleto) (Result, error) {
 	return Result{
 		Barcode:       barcode,
 		TypeableLine:  typeable,
-		NossoNumeroDV: b.NossoNumero + "-" + dvNN,
+		NossoNumeroDV: nnPuro + "-" + dvNN,
 	}, nil
+}
+
+// parseNossoNumero separa o número puro do DV.
+//   - "00000000001"   → calcula DV via banco
+//   - "000000000019"  → puro=[:11], valida e usa dv=último dígito
+//   - "00000000001-9" → puro=[:11], valida e usa dv=após o traço
+func parseNossoNumero(nn string, b bank.Bank) (puro, dv string, err error) {
+	switch len(nn) {
+	case 13: // com traço: "NNNNNNNNNNN-D"
+		puro = nn[:11]
+		dv = string(nn[12])
+	case 12: // sem traço: "NNNNNNNNNNND"
+		puro = nn[:11]
+		dv = string(nn[11])
+	default: // 11 dígitos: calcula DV
+		puro = nn
+		dv = b.NossoNumeroDV(nn)
+		return puro, dv, nil
+	}
+
+	// DV foi fornecido — valida se está correto
+	if expected := b.NossoNumeroDV(puro); dv != expected {
+		return "", "", fmt.Errorf("%w: got %q, expected %q", ErrWrongNossoNumeroDV, dv, expected)
+	}
+	return puro, dv, nil
 }
 
 // buildTypeableLine monta os 5 campos da linha digitável.
@@ -99,7 +129,9 @@ func validate(b Boleto) error {
 	if b.Bank == nil {
 		return ErrNilBank
 	}
-	if len(b.NossoNumero) != 11 {
+	// Aceita "00000000001" (11), "000000000019" (12) ou "00000000001-9" (13 com traço)
+	n := len(b.NossoNumero)
+	if n != 11 && n != 12 && !(n == 13 && b.NossoNumero[11] == '-') {
 		return ErrInvalidNossoNumero
 	}
 	if len(b.Agency) == 0 || len(b.Agency) > 4 {

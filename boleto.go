@@ -12,7 +12,7 @@ type Boleto struct {
 	Bank        bank.Bank // implementação do banco, ex: grafeno.New()
 	Agency      string    // agência do beneficiário, somente dígitos
 	Account     string    // conta do beneficiário sem dígito verificador, somente dígitos
-	NossoNumero string    // 11 dígitos, sem dígito verificador
+	NossoNumero string    // 11 dígitos sem DV ("00000000001") ou com DV ("00000000001-9")
 	DueDate     time.Time // data de vencimento
 	AmountCents int64     // valor em centavos (ex: R$ 10,50 = 1050)
 }
@@ -25,9 +25,10 @@ type Result struct {
 }
 
 var (
-	ErrInvalidNossoNumero = errors.New("nosso número must be exactly 11 digits")
-	ErrInvalidAgency      = errors.New("agency must be up to 4 digits")
-	ErrInvalidAccount     = errors.New("account must be up to 10 digits")
-	ErrNegativeAmount     = errors.New("amount in cents must be >= 0")
-	ErrNilBank            = errors.New("bank implementation must not be nil")
+	ErrInvalidNossoNumero    = errors.New("nosso número must be 11 digits, 12 digits (with DV), or \"NNNNNNNNNNN-D\"")
+	ErrWrongNossoNumeroDV    = errors.New("nosso número DV provided is incorrect")
+	ErrInvalidAgency         = errors.New("agency must be up to 4 digits")
+	ErrInvalidAccount        = errors.New("account must be up to 10 digits")
+	ErrNegativeAmount        = errors.New("amount in cents must be >= 0")
+	ErrNilBank               = errors.New("bank implementation must not be nil")
 )
