@@ -1,0 +1,17 @@
+# Binários
+*.exe
+*.out
+
+# Dependências
+vendor/
+
+# IDE / ferramentas
+.idea/
+.vscode/
+*.swp
+
+# Claude Code
+.claude/
+
+# Documentos internos
+docs/
