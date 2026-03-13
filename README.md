@@ -23,7 +23,7 @@ result, err := boletolib.Generate(boletolib.Boleto{
     Account:     "0012345678",        // conta sem dígito verificador (até 10 dígitos)
     NossoNumero: "00000000001",       // veja formatos aceitos abaixo
     DueDate:     time.Date(2026, 4, 7, 0, 0, 0, 0, time.UTC),
-    AmountCents: 150000,              // valor em centavos — R$ 1.500,00
+    Amount:      1500.00,             // valor em reais — R$ 1.500,00
 })
 if err != nil {
     log.Fatal(err)
