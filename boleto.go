@@ -14,7 +14,7 @@ type Boleto struct {
 	Account     string    // conta do beneficiário sem dígito verificador, somente dígitos
 	NossoNumero string    // 11 dígitos sem DV ("00000000001") ou com DV ("00000000001-9")
 	DueDate     time.Time // data de vencimento
-	AmountCents int64     // valor em centavos (ex: R$ 10,50 = 1050)
+	Amount      float64   // valor em reais, ex: 1047.00 (= R$ 1.047,00)
 }
 
 // Result contém os dados gerados prontos para uso.
@@ -29,6 +29,6 @@ var (
 	ErrWrongNossoNumeroDV    = errors.New("nosso número DV provided is incorrect")
 	ErrInvalidAgency         = errors.New("agency must be up to 4 digits")
 	ErrInvalidAccount        = errors.New("account must be up to 10 digits")
-	ErrNegativeAmount        = errors.New("amount in cents must be >= 0")
+	ErrInvalidAmount         = errors.New("amount must be >= 0")
 	ErrNilBank               = errors.New("bank implementation must not be nil")
 )

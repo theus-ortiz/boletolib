@@ -13,10 +13,10 @@ func main() {
 	result, err := boletolib.Generate(boletolib.Boleto{
 		Bank:        grafeno.New(),
 		Agency:      "0001",
-		Account:     "0012345678",
-		NossoNumero: "00000000001",
+		Account:     "00115031",
+		NossoNumero: "90000000811-8",
 		DueDate:     time.Date(2026, 4, 7, 0, 0, 0, 0, time.UTC),
-		AmountCents: 150000, // R$ 1.500,00
+		Amount:      1047.00,
 	})
 	if err != nil {
 		log.Fatalf("erro ao gerar boleto: %v", err)

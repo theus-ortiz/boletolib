@@ -2,6 +2,7 @@ package boletolib
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/theus-ortiz/boletolib/bank"
@@ -37,7 +38,7 @@ func Generate(b Boleto) (Result, error) {
 	factor := fmt.Sprintf("%04d", calc.DueDateFactor(b.DueDate))
 
 	// Passo 3 — Valor (10 dígitos em centavos, sem ponto nem vírgula)
-	amount := fmt.Sprintf("%010d", b.AmountCents)
+	amount := fmt.Sprintf("%010d", int64(math.Round(b.Amount*100)))
 
 	// Passo 4 — Campo livre de 25 dígitos (composição definida pelo banco)
 	freeField := b.Bank.FreeField(b.Agency, b.Account, nnPuro)
@@ -140,8 +141,8 @@ func validate(b Boleto) error {
 	if len(b.Account) == 0 || len(b.Account) > 10 {
 		return ErrInvalidAccount
 	}
-	if b.AmountCents < 0 {
-		return ErrNegativeAmount
+	if b.Amount < 0 {
+		return ErrInvalidAmount
 	}
 	return nil
 }
