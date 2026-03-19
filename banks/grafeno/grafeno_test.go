@@ -53,15 +53,20 @@ func TestFreeField(t *testing.T) {
 	}
 
 	gotAgency  := fl[0:4]
-	gotAccount := fl[4:14]
-	gotNN      := fl[14:25]
+	gotFixed   := fl[4:5]
+	gotAccount := fl[5:13]
+	gotNN      := fl[13:25]
 
 	wantAgency  := "0031"
-	wantAccount := "0007720000"
-	wantNN      := "28009527900"
+	wantFixed   := "0"
+	wantAccount := "07720000"
+	wantNN      := "028009527900"
 
 	if gotAgency != wantAgency {
 		t.Errorf("agency in free field = %q, want %q", gotAgency, wantAgency)
+	}
+	if gotFixed != wantFixed {
+		t.Errorf("fixed zero in free field = %q, want %q", gotFixed, wantFixed)
 	}
 	if gotAccount != wantAccount {
 		t.Errorf("account in free field = %q, want %q", gotAccount, wantAccount)

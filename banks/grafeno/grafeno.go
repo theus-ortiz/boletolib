@@ -55,14 +55,14 @@ func (b *Bank) NossoNumeroDV(nossoNumero string) string {
 // FreeField monta o campo livre de 25 dígitos conforme especificação Grafeno:
 //
 //	Posições 01–04 (4 dígitos) : Agência do Beneficiário
-//	Posições 05–14 (10 dígitos): Conta do Beneficiário sem dígito verificador
-//	Posições 15–25 (11 dígitos): Nosso Número sem dígito verificador
+//	Posição  05    (1 dígito)  : Fixo "0"
+//	Posições 06–13 (8 dígitos) : Conta do Beneficiário sem dígito verificador
+//	Posições 14–25 (12 dígitos): Nosso Número sem dígito verificador
 func (b *Bank) FreeField(agency, account, nossoNumero string) string {
 	agencyStr  := padLeft(agency, 4)
-	
-	accountStr := padLeft(account, 10)
-	nnStr      := padLeft(nossoNumero, 11)
-	return agencyStr + accountStr + nnStr
+	accountStr := padLeft(account, 8)
+	nnStr      := padLeft(nossoNumero, 12)
+	return agencyStr + "0" + accountStr + nnStr
 }
 
 // padLeft preenche a string com zeros à esquerda até atingir o tamanho desejado.
